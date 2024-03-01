@@ -16,7 +16,7 @@ def create_quantum_circuit(null_prior, null_probs, positive_probs):
     # Initialize the quantum circuit with n qubits and n classical bits
     assert(len(null_probs) == len(positive_probs))
     n = len(null_probs) #Number of features
-    circ = QuantumCircuit(n+1)
+    circ = QuantumCircuit(n+1) #Add one for prior
     
     # Implementing the gates based on the calculated thetas
     circ.ry(theta_y, 0)  # Encode P(y=0) into qubit 0
