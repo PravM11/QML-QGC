@@ -7,10 +7,32 @@ import torch.nn.functional as F
 
 class BinaryPreprocess:
     def __init__(self, diffclasses: tuple, mnist_path: str = 'data', dd: bool = True):
-        class_features = BinaryPreprocess._processMNIST(mnist_path, dd)
+        dataset = torchvision.datasets.MNIST(root=mnist_path, train=True, download=dd)
+
+        class_features = BinaryPreprocess._processMNIST(dataset)
         
         self.classes = diffclasses
-        self.features = class_features[diffclasses] #2 x 2 x Features
+        self.features = class_features[diffclasses] #2 x 2 x Features]
+
+        self.null_probs = torch.zeros(9)
+        self.positive_probs = torch.zeros(9)
+
+        diffclasses_count = 0
+        prior_count = 0
+        for (data, label) in dataset:
+            if label in diffclasses:
+                diffclasses_count += 1
+                binarized_features = self.inference_features(data)
+                if label == diffclasses[0]:
+                    prior_count += 1
+                    self.null_probs += binarized_features
+                else:
+                    self.positive_probs += binarized_features
+        
+        positive_count = diffclasses_count - prior_count
+        self.prior = prior_count / diffclasses_count
+        self.null_probs /= prior_count
+        self.positive_probs /= positive_count
 
     def inference_features(self, img):
         """
@@ -29,8 +51,7 @@ class BinaryPreprocess:
         return torch.logical_xor(over_div, mu_diff).float()
 
 
-    def _processMNIST(mnist_path: str = 'data', dd: bool = True):
-        dataset = torchvision.datasets.MNIST(root=mnist_path, train=True, download=dd)
+    def _processMNIST(self, dataset):
         avg_kernel = torch.ones((8, 8)) / 64
 
         stats = torch.zeros((0,9))
