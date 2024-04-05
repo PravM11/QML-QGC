@@ -1,4 +1,3 @@
-import qiskit
 from qiskit import QuantumCircuit
 import numpy as np
 
@@ -31,12 +30,3 @@ def create_quantum_circuit(null_prior, null_probs, positive_probs):
     circ.measure_all()  # Measure both the label and feature qubits
     
     return circ
-
-# Example usage
-P_y0 = 0.6
-P_xn_given_y0 = [0.7, 0.3, 0.1, 0.9]
-P_xn_given_y1 = [0.2, 0.6, 0.8, 0.15]
-circ = create_quantum_circuit(P_y0, P_xn_given_y0, P_xn_given_y1)
-
-# To draw the circuit using Matplotlib, ensure you have matplotlib installed and your environment supports plotting
-circ.draw('mpl')

@@ -68,11 +68,9 @@ class BinaryPreprocess:
 
             labels[i] = label
         
-        print(labels.shape)
         class_features = torch.zeros((10, 2, 9)) #Classes x Statistics x Features
         for i in range(len(class_features)):
             subset = stats[labels == i]
-            print(subset.shape)
             feat_mean = subset.mean(dim=0) #Shape should be 9 for both
             feat_std = subset.var(dim=0)
 
