@@ -40,6 +40,7 @@ class BinaryPreprocess:
         input: img 28 x 28 image
         """
         img = torch.from_numpy(np.array(img))
+        img = img[1:,1:]
 
         avg_kernel = torch.ones((8,8)) / 64
         x_prime = F.conv2d(img[None, :], avg_kernel[None, None, :], stride=9).reshape(1, -1)
@@ -59,6 +60,7 @@ class BinaryPreprocess:
 
         for i, (data, label) in enumerate(dataset):
             img = torch.from_numpy(np.array(data)).float()
+            img = img[1:,1:]
 
             mean_pooled = F.conv2d(img[None, :], avg_kernel[None, None, :], stride=9).reshape(1, -1)
 
