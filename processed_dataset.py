@@ -51,7 +51,7 @@ class BinaryPreprocess:
         return torch.logical_xor(over_div, mu_diff).float()
 
 
-    def _processMNIST(self, dataset):
+    def _processMNIST(dataset):
         avg_kernel = torch.ones((8, 8)) / 64
 
         stats = torch.zeros((0,9))
