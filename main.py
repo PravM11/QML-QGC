@@ -10,7 +10,7 @@ null_class = 0
 alt_class = 1
 
 if __name__ == "__main__":
-    preproc = BinaryPreprocess((null_class, alt_class))
+    preproc = BinaryPreprocess([null_class, alt_class])
 
     #null prior, null probs, positive probs
     naive_qbc = nqbc.create_quantum_circuit(preproc.prior, preproc.null_probs, preproc.positive_probs)

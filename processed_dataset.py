@@ -6,11 +6,11 @@ import torch.nn.functional as F
 
 
 class BinaryPreprocess:
-    def __init__(self, diffclasses: tuple, mnist_path: str = 'data', dd: bool = True):
+    def __init__(self, diffclasses: list, mnist_path: str = 'data', dd: bool = True):
         dataset = torchvision.datasets.MNIST(root=mnist_path, train=True, download=dd)
 
         class_features = BinaryPreprocess._processMNIST(dataset)
-        
+
         self.classes = diffclasses
         self.features = class_features[diffclasses] #2 x 2 x Features]
 
@@ -25,9 +25,9 @@ class BinaryPreprocess:
                 binarized_features = self.inference_features(data)
                 if label == diffclasses[0]:
                     prior_count += 1
-                    self.null_probs += binarized_features
+                    self.null_probs += binarized_features.squeeze()
                 else:
-                    self.positive_probs += binarized_features
+                    self.positive_probs += binarized_features.squeeze()
         
         positive_count = diffclasses_count - prior_count
         self.prior = prior_count / diffclasses_count
@@ -39,7 +39,7 @@ class BinaryPreprocess:
         Binarization of img average features between the two classes
         input: img 28 x 28 image
         """
-        img = torch.from_numpy(np.array(img))
+        img = torch.from_numpy(np.array(img)).float()
         img = img[1:,1:]
 
         avg_kernel = torch.ones((8,8)) / 64
