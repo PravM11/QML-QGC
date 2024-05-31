@@ -39,11 +39,17 @@ class BinaryPreprocess:
         Binarization of img average features between the two classes
         input: img 28 x 28 image
         """
+
+        #Convert Img to Tensor
         img = torch.from_numpy(np.array(img)).float()
+        #Trim the borders to avoid edge effects in convolution
         img = img[1:,1:]
 
+        #torch.ones creates a 8x8 tensor of ones, then we divide by 64 to get the average kernel
         avg_kernel = torch.ones((8,8)) / 64
+        #Convolve the image with the average kernel, then reshape to 1 x 9 tensor
         x_prime = F.conv2d(img[None, :], avg_kernel[None, None, :], stride=9).reshape(1, -1)
+        #Divide the two features to get the dividing line
         divpoint = (self.features[0, 0] * self.features[1, 1] - self.features[1, 0] * self.features[0, 1]) / (self.features[0, 1] - self.features[1, 1])
 
         over_div = x_prime > divpoint
@@ -53,9 +59,12 @@ class BinaryPreprocess:
 
 
     def _processMNIST(dataset):
-        avg_kernel = torch.ones((8, 8)) / 64
+        avg_kernel = torch.ones((9, 9)) / 81
 
+        #Store pooled features of each image
         stats = torch.zeros((0,9))
+
+        #Store labels of each image
         labels = torch.zeros(len(dataset))
 
         for i, (data, label) in enumerate(dataset):

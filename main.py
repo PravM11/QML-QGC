@@ -47,7 +47,7 @@ if __name__ == "__main__":
     quantum_correct = 0
     for (img, label) in val_set:
         if label == 0 or label == 1:
-            print(f"Example {total+1}")
+            #print(f"Example {total+1}")
 
             img = torch.from_numpy(np.array(img.convert('L')))
             binarized_features = preproc.inference_features(img).squeeze()
@@ -67,7 +67,7 @@ if __name__ == "__main__":
             result = simulator.run(composite, shots=shots).result()
             counts = result.get_counts(composite)
 
-            print(counts)
+            #print(counts)
             matched_counts = {}
             for output in counts.keys():
                 for i in range(len(binarized_features)):
