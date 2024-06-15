@@ -3,30 +3,46 @@ import numpy as np
 
 # Function to calculate rotation angle
 def calc_angle(prob):
-    #Calculate the angle using the formula
     return 2 * np.arccos(np.sqrt(prob))
 
-def create_quantum_circuit(null_prior, null_probs, positive_probs):
-    # Calculate angles based on the provided probabilities
-    theta_y = calc_angle(null_prior)
-    null_rotations = [calc_angle(conditional) for conditional in null_probs]
-    pos_rotations = [calc_angle(conditional) for conditional in positive_probs]
+
+
+def create_quantum_circuit(priors, null_probs_list, positive_probs_list):
+    num_classes = len(priors)
+    num_class_qubits = int(np.ceil(np.log2(num_classes)))
+    n = len(null_probs_list[0])
     
-    # Initialize the quantum circuit with n qubits and n classical bits
-    assert(len(null_probs) == len(positive_probs))
-    n = len(null_probs) #Number of features
-    circ = QuantumCircuit(n+1) #Add one for prior
+    circ = QuantumCircuit(n + num_class_qubits)
     
-    # Implementing the gates based on the calculated thetas
-    circ.ry(theta_y, 0)  # Encode P(y=0) into qubit 0
-    for i in range(n):
-        circ.cry(null_rotations[i], 0, i+1)
-    circ.x(0)  # Flip y to represent y=1
-    for i in range(n):
-        circ.cry(pos_rotations[i], 0, i+1) # Now for y=1, encode P(x1|y=1)
-    circ.x(0)  # Reset y back
+    for i in range(num_classes):
+        binary_representation = format(i, f'0{num_class_qubits}b')
+        theta_y = calc_angle(priors[i])
+        for j, bit in enumerate(binary_representation):
+            if bit == '1':
+                circ.x(j)
+        circ.ry(theta_y, num_class_qubits - 1)
+        for j, bit in enumerate(binary_representation):
+            if bit == '1':
+                circ.x(j)
+
+    for i in range(num_classes):
+        binary_representation = format(i, f'0{num_class_qubits}b')
+        null_rotations = [calc_angle(conditional) for conditional in null_probs_list[i]]
+        pos_rotations = [calc_angle(conditional) for conditional in positive_probs_list[i]]
+
+        for j, bit in enumerate(binary_representation):
+            if bit == '1':
+                circ.x(j)
+        for k in range(n):
+            circ.cry(null_rotations[k], num_class_qubits - 1, num_class_qubits + k)
+        circ.x(num_class_qubits - 1)
+        for k in range(n):
+            circ.cry(pos_rotations[k], num_class_qubits - 1, num_class_qubits + k)
+        circ.x(num_class_qubits - 1)
+        for j, bit in enumerate(binary_representation):
+            if bit == '1':
+                circ.x(j)
     
-    # Measure 
-    circ.measure_all()  # Measure both the label and feature qubits
-    
+    circ.measure_all()
+    circ.draw('mpl')
     return circ
