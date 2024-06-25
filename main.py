@@ -14,31 +14,27 @@ null_class = 0
 alt_class = 1
 
 class classicalBayes:
-    def __init__(self, null_prior, null_probs, positive_probs):
-        self.null_prior = null_prior
-        self.null_probs = null_probs
-        self.positive_probs = positive_probs
+    def __init__(self, priors, probs):
+        self.priors = priors
+        self.probs = probs
     
     def inference(self, sample):
-        null_prob = self.null_prior
-        alt_prob = 1 - self.null_prior
+        scores = self.priors
 
-        for i in range(len(self.positive_probs)):
+        for i in range(len(sample)):
             if sample[i]:
-                null_prob *= self.null_probs[i]
-                alt_prob *= self.positive_probs[i]
+                scores *= self.probs
             else:
-                null_prob *= (1 - self.null_probs[i])
-                alt_prob *= (1 - self.positive_probs[i])
+                scores *= (1 - self.probs)
         
-        return 1 if alt_prob > null_prob else 0
+        return scores.argmax()
 
 if __name__ == "__main__":
     preproc = BinaryPreprocess([null_class, alt_class])
 
     #null prior, null probs, positive probs
     naive_qbc = nqbc.create_quantum_circuit(preproc.prior, preproc.null_probs.tolist(), preproc.positive_probs.tolist())    
-    classical_bayes = classicalBayes(preproc.prior, preproc.null_probs.tolist(), preproc.positive_probs.tolist())
+    classical_bayes = classicalBayes(preproc.priors, preproc.probs)
     
     val_set = torchvision.datasets.MNIST(root='data', train=False)
 

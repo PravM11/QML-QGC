@@ -7,10 +7,10 @@ def calc_angle(prob):
 
 
 
-def create_quantum_circuit(priors, null_probs_list, positive_probs_list):
+def create_quantum_circuit(priors, all_probs):
     num_classes = len(priors)
     num_class_qubits = int(np.ceil(np.log2(num_classes)))
-    n = len(null_probs_list[0])
+    n = len(all_probs[0])
     
     circ = QuantumCircuit(n + num_class_qubits)
     

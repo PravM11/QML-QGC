@@ -14,25 +14,17 @@ class BinaryPreprocess:
         self.classes = diffclasses
         self.features = class_features[diffclasses] #2 x 2 x Features]
 
-        self.null_probs = torch.zeros(9)
-        self.positive_probs = torch.zeros(9)
-
-        diffclasses_count = 0
-        prior_count = 0
+        self.mapping = {x: idx for idx, x in enumerate(diffclasses)}
+        self.probs = torch.zeros((9, len(diffclasses))) #Classes x Features
+        counts = torch.zeros(len(diffclasses))
         for (data, label) in dataset:
             if label in diffclasses:
-                diffclasses_count += 1
-                binarized_features = self.inference_features(data)
-                if label == diffclasses[0]:
-                    prior_count += 1
-                    self.null_probs += binarized_features.squeeze()
-                else:
-                    self.positive_probs += binarized_features.squeeze()
-        
-        positive_count = diffclasses_count - prior_count
-        self.prior = prior_count / diffclasses_count
-        self.null_probs /= prior_count
-        self.positive_probs /= positive_count
+                idx = self.mapping[label]
+                counts[idx] += 1
+                self.probs[:,idx] += self.inference_features(data).squeeze()
+
+        self.priors = counts / counts.sum()
+        self.probs /= counts
 
     def inference_features(self, img):
         """
